@@ -1,7 +1,9 @@
 package at.ac.fhcampuswien.newsapi;
 
 
+import at.ac.fhcampuswien.newsanalyzer.ctrl.GetNewsException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import at.ac.fhcampuswien.newsapi.beans.NewsResponse;
 import at.ac.fhcampuswien.newsapi.enums.*;
@@ -10,6 +12,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.IllegalFormatException;
 
 
 public class NewsApi {
@@ -122,6 +125,7 @@ public class NewsApi {
             obj = new URL(url);
         } catch (MalformedURLException e) {
             // TODO improve ErrorHandling
+            System.out.println("URL wasn't built correctly. Please try again.");
             e.printStackTrace();
         }
         HttpURLConnection con;
@@ -134,16 +138,24 @@ public class NewsApi {
                 response.append(inputLine);
             }
             in.close();
+        } catch (NullPointerException e){
+            System.out.println("Error: Open Connection failed.");
         } catch (IOException e) {
-            // TODO improve ErrorHandling
-            System.out.println("Error "+e.getMessage());
+            // TODO improve ErrorHandling -> added NullPointerException
+            System.out.println("Error: I/O of stream failed. " + e.getMessage());
         }
         return response.toString();
     }
 
     protected String buildURL() {
-        // TODO ErrorHandling
-        String urlbase = String.format(NEWS_API_URL,getEndpoint().getValue(),getQ(),getApiKey());
+        // TODO ErrorHandling -> maybe done? Muss hier was im finally block stehen?
+        String urlbase = "";
+        try{
+             urlbase = String.format(NEWS_API_URL,getEndpoint().getValue(),getQ(),getApiKey());
+        } catch (IllegalFormatException e){
+            System.out.println("String formatting failed.");
+            e.printStackTrace();
+        }
         StringBuilder sb = new StringBuilder(urlbase);
 
         System.out.println(urlbase);
@@ -185,22 +197,25 @@ public class NewsApi {
     }
 
     public NewsResponse getNews() {
-        NewsResponse newsReponse = null;
+        NewsResponse newsResponse = null;
         String jsonResponse = requestData();
         if(jsonResponse != null && !jsonResponse.isEmpty()){
 
             ObjectMapper objectMapper = new ObjectMapper();
             try {
-                newsReponse = objectMapper.readValue(jsonResponse, NewsResponse.class);
-                if(!"ok".equals(newsReponse.getStatus())){
-                    System.out.println("Error: "+newsReponse.getStatus());
+                newsResponse = objectMapper.readValue(jsonResponse, NewsResponse.class);
+                if(!"ok".equals(newsResponse.getStatus())){
+                    System.out.println("Error: "+newsResponse.getStatus());
                 }
+            //TODO improve Errorhandling -> more detailed catch blocks
+            } catch(JsonMappingException e) {
+                System.out.println("Error: JSON Mapping failed.");
+                e.printStackTrace();
             } catch (JsonProcessingException e) {
-                System.out.println("Error: "+e.getMessage());
+                System.out.println("Error: JSON Processing failed. " + e.getMessage());
             }
         }
-        //TODO improve Errorhandling
-        return newsReponse;
+        return newsResponse;
     }
 }
 
