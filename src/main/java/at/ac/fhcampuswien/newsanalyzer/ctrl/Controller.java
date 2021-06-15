@@ -1,17 +1,14 @@
 package at.ac.fhcampuswien.newsanalyzer.ctrl;
 
-import at.ac.fhcampuswien.newsanalyzer.ui.UserInterface;
 import at.ac.fhcampuswien.newsapi.NewsApi;
 import at.ac.fhcampuswien.newsapi.beans.Article;
 import at.ac.fhcampuswien.newsapi.beans.NewsResponse;
 
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.io.*;
+import java.net.URL;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Controller {
 
@@ -74,12 +71,39 @@ public class Controller {
 			System.out.println(s);
 
 		System.out.println();
+
+		System.out.print("Would you like to save the articles to your device? [y|n]");
+		Scanner scan = new Scanner(System.in);
+		String answer = scan.nextLine();
+		if (answer.equals("y")){
+			for (Article article: articles) {
+				try{
+					URL url = new URL(article.getUrl());
+					InputStream input = url.openStream();
+					BufferedReader br = new BufferedReader(new InputStreamReader(input));
+					BufferedWriter bw = new BufferedWriter(new FileWriter(article.getTitle().substring(0, 5) + ".html"));
+					String line;
+					while ((line = br.readLine()) != null) {
+						bw.write(line);
+						bw.newLine();
+					}
+					br.close();
+					bw.close();
+					System.out.println("Article successfully saved!");
+				} catch (IOException e) {
+					System.out.println("I/O failed. Maybe title too short?");
+					e.printStackTrace();
+				} catch (Exception e) {
+					System.out.println("RIP");
+					e.printStackTrace();
+				}
+			}
+		}
 		System.out.println("End process");
 	}
 	
 
 	public Object getData() {
-		
 		return null;
 	}
 }
