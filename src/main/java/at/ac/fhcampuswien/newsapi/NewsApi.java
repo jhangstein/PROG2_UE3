@@ -117,16 +117,18 @@ public class NewsApi {
         this.endpoint = endpoint;
     }
 
-    protected String requestData() {
+    protected String requestData() throws GetNewsException {
         String url = buildURL();
         System.out.println("URL: " + url);
         URL obj = null;
         try {
             obj = new URL(url);
+            if (url.equals("")){
+                throw new GetNewsException("URL empty. Mission failed.");
+            }
         } catch (MalformedURLException e) {
-            // TODO improve ErrorHandling
             System.out.println("URL wasn't built correctly. Please try again.");
-            e.printStackTrace();
+            throw new GetNewsException(e.getMessage());
         }
         HttpURLConnection con;
         StringBuilder response = new StringBuilder();
@@ -147,11 +149,13 @@ public class NewsApi {
         return response.toString();
     }
 
-    protected String buildURL() {
-        // TODO ErrorHandling -> maybe done? Muss hier was im finally block stehen?
+    protected String buildURL() throws GetNewsException {
         String urlbase = "";
         try{
              urlbase = String.format(NEWS_API_URL,getEndpoint().getValue(),getQ(),getApiKey());
+             if (urlbase.equals("")){
+                 throw new GetNewsException("URL base empty. Fetching data failed.");
+             }
         } catch (IllegalFormatException e){
             System.out.println("String formatting failed.");
             e.printStackTrace();
@@ -196,7 +200,7 @@ public class NewsApi {
         return sb.toString();
     }
 
-    public NewsResponse getNews() {
+    public NewsResponse getNews() throws GetNewsException {
         NewsResponse newsResponse = null;
         String jsonResponse = requestData();
         if(jsonResponse != null && !jsonResponse.isEmpty()){
@@ -206,6 +210,7 @@ public class NewsApi {
                 newsResponse = objectMapper.readValue(jsonResponse, NewsResponse.class);
                 if(!"ok".equals(newsResponse.getStatus())){
                     System.out.println("Error: "+newsResponse.getStatus());
+                    throw new GetNewsException("News Response can't be fetched. RIP.");
                 }
             //TODO improve Errorhandling -> more detailed catch blocks
             } catch(JsonMappingException e) {

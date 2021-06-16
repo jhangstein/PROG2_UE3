@@ -16,15 +16,14 @@ public class Controller {
 
 	public void process(NewsApi newsApi) {
 		System.out.println("Start process");
-
-		//TODO implement Error handling -> done. throws custom Exception when getNews returns no articles
 		NewsResponse newsResponse = new NewsResponse();
+		List<Article> articles = new ArrayList<>();
 		try{
 			newsResponse = newsApi.getNews();
-			List<Article> articles = newsResponse.getArticles();
-			if(articles.isEmpty()){
+			articles = newsResponse.getArticles();
+/*			if(articles.isEmpty()){
 				throw new GetNewsException("Empty news response. Please check parameters.");
-				}
+				}*/
 		}
 		catch (GetNewsException e){
 			System.out.println("\n\n");
@@ -32,7 +31,7 @@ public class Controller {
 			return;
 		}
 		//TODO load the news based on the parameters -> done
-		List<Article> articles = newsResponse.getArticles();
+//		List<Article> articles = newsResponse.getArticles();
 		articles.stream().forEach(article -> System.out.println(article.toString()));
 
 

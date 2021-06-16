@@ -1,5 +1,6 @@
 package at.ac.fhcampuswien.newsapi.beans;
 
+import at.ac.fhcampuswien.newsanalyzer.ctrl.GetNewsException;
 import com.fasterxml.jackson.annotation.*;
 
 import java.util.HashMap;
@@ -74,7 +75,10 @@ public class NewsResponse {
     }
 
     @JsonProperty("articles")
-    public List<Article> getArticles() {
+    public List<Article> getArticles() throws GetNewsException {
+        if (articles.isEmpty()){
+            throw new GetNewsException("Article Response List is empty. Please try with another query.");
+        }
         return articles;
     }
 
